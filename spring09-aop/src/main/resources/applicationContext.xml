@@ -1,0 +1,78 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<beans xmlns="http://www.springframework.org/schema/beans"
+       xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+       xmlns:context="http://www.springframework.org/schema/context"
+       xmlns:aop="http://www.springframework.org/schema/aop"
+       xsi:schemaLocation="http://www.springframework.org/schema/beans
+        https://www.springframework.org/schema/beans/spring-beans.xsd
+        http://www.springframework.org/schema/context
+        https://www.springframework.org/schema/context/spring-context.xsd
+        http://www.springframework.org/schema/aop
+        https://www.springframework.org/schema/aop/spring-aop.xsd">
+
+    <!--：指定要扫描的包，该包下的注解会生效-->
+    <context:component-scan base-package="cn.qqa"/>
+
+
+    <!--方式一：使用原生Spring API接口[重点是实现Spring的API接口] 更强大-->
+
+    <!--1.注册bean-->
+    <bean id="userService" class="cn.qqa.service.UserServiceImpl"/>
+    <bean id="log" class="cn.qqa.log.Log"/>
+    <bean id="afterLog" class="cn.qqa.log.AfterLog"/>
+
+<!--    &lt;!&ndash;2.配置aop:需要导入aop的约束&ndash;&gt;
+    <aop:config >
+        &lt;!&ndash;切入点:expression：表达式，execution(要执行的位置！ 修饰符 返回值 包名.类名.方法(参数))&ndash;&gt;
+        <aop:pointcut id="pointcut" expression="execution(* cn.qqa.service.UserServiceImpl.*(..))"/>
+
+        &lt;!&ndash;
+            执行环绕增加！
+            将哪个类设置到哪个切入点
+        &ndash;&gt;
+        <aop:advisor advice-ref="log" pointcut-ref="pointcut"/>
+        <aop:advisor advice-ref="afterLog" pointcut-ref="pointcut"/>
+
+    </aop:config>-->
+
+
+    <!--方式二：自定义类[重点是切面类的定义]-->
+
+    <bean id="diy" class="cn.qqa.diy.DiyPointCut"/>
+
+    <aop:config>
+        <!--自定义切面 ref 要引用的类-->
+        <aop:aspect  ref="diy">
+
+            <!--切入点-->
+            <aop:pointcut id="pointcut" expression="execution(* cn.qqa.service.UserServiceImpl.*(..))"/>
+
+            <!--通知-->
+            <aop:before method="before" pointcut-ref="pointcut"/>
+            <aop:after method="after" pointcut-ref="pointcut"/>
+
+        </aop:aspect>
+    </aop:config>
+
+
+    <!--方式三：使用注解方式-->
+
+    <bean id="annotaionPointCut" class="cn.qqa.diy.AnnotationPointCut"/>
+
+
+    <!--开启注解支持-->
+    <!--
+        动态代理的实现方式
+        1.JDK（默认）proxy-target-class="false"
+        2.cglib proxy-target-class="true"
+    -->
+
+    <aop:aspectj-autoproxy />
+
+
+
+    <!--加载最新注解驱动-->
+    <context:annotation-config/>
+
+
+</beans>
